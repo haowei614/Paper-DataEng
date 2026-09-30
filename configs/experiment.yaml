@@ -57,6 +57,9 @@ datasets:
     scale_factor: 0.1
     tables: [orders, lineitem, customer]
     doc_path: docs/tpch.md
+    # Medium scope: downsample lineitem (~600k at sf=0.1) to keep validation
+    # tractable. Deterministic (sample_seed) so `make data` reproduces it.
+    table_row_caps: {lineitem: 100000}
 
 conditions: [a, b, c]      # a=schema, b=schema+docs, c=schema+docs+sample rows
 repetitions: 1             # medium scope; temp=0 is ~deterministic. Bump to 3 for stability study.

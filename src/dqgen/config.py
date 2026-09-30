@@ -55,6 +55,11 @@ class DatasetSpec(BaseModel):
     tables: list[str] = Field(default_factory=lambda: ["orders", "lineitem", "customer"])
     doc_path: str | None = None
     sample_seed: int = 42
+    # Optional per-table row caps (tpch only). Tables larger than their cap are
+    # uniformly downsampled with ``sample_seed`` after cleaning, before row ids
+    # are assigned, so the clean data is reproducible from the pipeline alone.
+    # E.g. {lineitem: 100000} keeps the medium-scope lineitem tractable.
+    table_row_caps: dict[str, int] = Field(default_factory=dict)
 
 
 class InjectionConfig(BaseModel):

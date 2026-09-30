@@ -104,6 +104,7 @@ def run_data(cfg: ExperimentConfig) -> None:
             prepare_tpch(
                 sf=ds.scale_factor, raw_dir=Path(cfg.paths.raw_dir) / "tpch",
                 clean_dir=Path(cfg.paths.clean_dir),
+                table_row_caps=ds.table_row_caps, sample_seed=ds.sample_seed,
             )
     logger.info("data step complete")
 

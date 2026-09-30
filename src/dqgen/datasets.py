@@ -365,16 +365,26 @@ def prepare_tpch(
     sf: float = 0.1,
     raw_dir: Path = Path("data/raw/tpch"),
     clean_dir: Path = Path("data/clean"),
+    table_row_caps: dict[str, int] | None = None,
+    sample_seed: int = 42,
 ) -> tuple[dict[str, pd.DataFrame], CleaningReport]:
-    """End-to-end TPC-H: generate -> load -> clean -> add row ids -> save.
+    """End-to-end TPC-H: generate -> load -> clean -> cap -> add row ids -> save.
 
     Row ids are added per table. Each table is written to
-    ``clean_dir/tpch_<table>.parquet``.
+    ``clean_dir/tpch_<table>.parquet``. ``table_row_caps`` optionally downsamples
+    named tables (fixed ``sample_seed``) after cleaning; capping the child of a
+    foreign key preserves referential integrity (its keys stay a subset of the
+    uncapped parent's).
     """
+    table_row_caps = table_row_caps or {}
     paths = generate_tpch(sf, raw_dir)
     tables = load_tpch(paths)
     cleaned, report = clean_tpch(tables)
-    result = {name: add_row_ids(t) for name, t in cleaned.items()}
+    capped = {
+        name: sample_rows(t, n=table_row_caps[name], seed=sample_seed) if name in table_row_caps else t
+        for name, t in cleaned.items()
+    }
+    result = {name: add_row_ids(t) for name, t in capped.items()}
     clean_dir = Path(clean_dir)
     clean_dir.mkdir(parents=True, exist_ok=True)
     for name, t in result.items():
