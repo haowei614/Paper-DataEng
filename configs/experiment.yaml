@@ -1,0 +1,76 @@
+# dqgen experiment configuration.
+#
+# The default model roster is fully local (Ollama). Pull the models first:
+#   ollama pull qwen2.5-coder:32b
+#   ollama pull qwen2.5:7b
+#   ollama pull llama3.1:8b
+#
+# To close RQ4 (local vs. API), add API models below (see commented examples)
+# and export the referenced API keys.
+
+models:
+  - name: qwen2.5-coder-32b
+    backend: openai            # OpenAI-compatible; Ollama exposes /v1
+    model: qwen2.5-coder:32b
+    base_url: http://localhost:11434/v1
+    temperature: 0.0
+    max_tokens: 4096
+
+  - name: qwen2.5-7b
+    backend: openai
+    model: qwen2.5:7b
+    base_url: http://localhost:11434/v1
+    temperature: 0.0
+    max_tokens: 4096
+
+  - name: llama3.1-8b
+    backend: openai
+    model: llama3.1:8b
+    base_url: http://localhost:11434/v1
+    temperature: 0.0
+    max_tokens: 4096
+
+  # --- API models (uncomment and set keys to include in RQ4) ---
+  # - name: claude-sonnet
+  #   backend: anthropic
+  #   model: claude-sonnet-4-5           # provider model id
+  #   api_key_env: ANTHROPIC_API_KEY
+  #   temperature: 0.0
+  #   max_tokens: 4096
+  #
+  # - name: gpt-4o
+  #   backend: openai
+  #   model: gpt-4o
+  #   base_url: https://api.openai.com/v1
+  #   api_key_env: OPENAI_API_KEY
+
+datasets:
+  - name: nyc_taxi
+    kind: nyc_taxi
+    month: "2024-01"
+    sample_rows: 100000
+    sample_seed: 42
+    doc_path: docs/nyc_taxi.md
+
+  - name: tpch
+    kind: tpch
+    scale_factor: 0.1
+    tables: [orders, lineitem, customer]
+    doc_path: docs/tpch.md
+
+conditions: [a, b, c]      # a=schema, b=schema+docs, c=schema+docs+sample rows
+repetitions: 3
+sample_rows_in_prompt: 10
+
+injection:
+  rates: [0.01, 0.05]
+  seeds: [1, 2, 3]
+
+paths:
+  raw_dir: data/raw
+  clean_dir: data/clean
+  corrupted_dir: data/corrupted
+  docs_dir: docs
+  cache_dir: cache/llm
+  results_dir: results
+  logs_dir: logs

@@ -1,0 +1,38 @@
+You are a data quality engineer. Given information about a single table, propose
+data quality constraints expressed as Great Expectations (GX) 1.x expectations.
+
+## Table
+Dataset: {{ ctx.dataset }}
+Table: {{ ctx.table }}
+
+## Schema
+{{ ctx.schema }}
+{% if ctx.documentation %}
+## Documentation (data dictionary)
+{{ ctx.documentation }}
+{% endif %}
+{% if ctx.sample_rows %}
+## Sample rows (CSV)
+{{ ctx.sample_rows }}
+{% endif %}
+
+## Allowed expectation types
+Use ONLY the following expectation types. Provide the listed kwargs (argument
+names must match exactly). Column names must match the schema above.
+{{ allowlist }}
+
+## Output format
+Respond with ONLY a JSON array — no prose, no markdown fences. Each element is
+an object with exactly these fields:
+- "expectation_type": one of the allowed types above
+- "kwargs": an object with the arguments for that expectation
+- "rationale": a short string explaining why this constraint holds
+
+Example:
+[
+  {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "example_col"}, "rationale": "This column is required."}
+]
+
+Propose constraints that should hold for clean, valid data. Prefer constraints
+you can justify from the schema and documentation. Do not invent columns that
+are not in the schema. Output the JSON array now.

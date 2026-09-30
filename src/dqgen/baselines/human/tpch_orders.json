@@ -1,0 +1,8 @@
+[
+  {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "o_orderkey"}, "rationale": "Primary key is required."},
+  {"expectation_type": "expect_column_values_to_be_unique", "kwargs": {"column": "o_orderkey"}, "rationale": "Primary key is unique."},
+  {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "o_custkey"}, "rationale": "Foreign key to customer is required."},
+  {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "o_orderstatus", "value_set": ["O", "F", "P"]}, "rationale": "Documented order statuses."},
+  {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "o_totalprice", "min_value": 0, "max_value": 100000000}, "rationale": "Total price is non-negative."},
+  {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "o_orderpriority", "value_set": ["1-URGENT", "2-HIGH", "3-MEDIUM", "4-NOT SPECIFIED", "5-LOW"]}, "rationale": "Documented priorities."}
+]

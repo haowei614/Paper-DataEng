@@ -1,0 +1,11 @@
+[
+  {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "l_orderkey"}, "rationale": "Foreign key to orders is required."},
+  {"expectation_type": "expect_compound_columns_to_be_unique", "kwargs": {"column_list": ["l_orderkey", "l_linenumber"]}, "rationale": "Composite primary key is unique."},
+  {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "l_quantity", "min_value": 1, "max_value": 50}, "rationale": "Quantity is positive, up to 50."},
+  {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "l_discount", "min_value": 0.0, "max_value": 0.1}, "rationale": "Discount fraction 0.00-0.10."},
+  {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "l_tax", "min_value": 0.0, "max_value": 0.08}, "rationale": "Tax fraction 0.00-0.08."},
+  {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "l_extendedprice", "min_value": 0, "max_value": 100000000}, "rationale": "Extended price is non-negative."},
+  {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "l_returnflag", "value_set": ["R", "A", "N"]}, "rationale": "Documented return flags."},
+  {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "l_linestatus", "value_set": ["O", "F"]}, "rationale": "Documented line statuses."},
+  {"expectation_type": "expect_column_pair_values_a_to_be_greater_than_b", "kwargs": {"column_A": "l_receiptdate", "column_B": "l_shipdate", "or_equal": true}, "rationale": "Receipt is on or after ship date."}
+]

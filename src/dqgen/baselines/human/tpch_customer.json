@@ -1,0 +1,7 @@
+[
+  {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "c_custkey"}, "rationale": "Primary key is required."},
+  {"expectation_type": "expect_column_values_to_be_unique", "kwargs": {"column": "c_custkey"}, "rationale": "Primary key is unique."},
+  {"expectation_type": "expect_column_values_to_be_between", "kwargs": {"column": "c_nationkey", "min_value": 0, "max_value": 24}, "rationale": "25 TPC-H nations, keys 0-24."},
+  {"expectation_type": "expect_column_values_to_be_in_set", "kwargs": {"column": "c_mktsegment", "value_set": ["AUTOMOBILE", "BUILDING", "FURNITURE", "HOUSEHOLD", "MACHINERY"]}, "rationale": "Five documented market segments."},
+  {"expectation_type": "expect_column_values_to_not_be_null", "kwargs": {"column": "c_name"}, "rationale": "Name is required."}
+]
