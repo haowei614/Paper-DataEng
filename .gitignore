@@ -16,5 +16,8 @@ cache/
 results/
 logs/
 
+# Run logs
+*.log
+
 # OS
 .DS_Store

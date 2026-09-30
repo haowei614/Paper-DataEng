@@ -78,6 +78,15 @@ class ExperimentConfig(BaseModel):
     conditions: list[Literal["a", "b", "c"]] = Field(default_factory=lambda: ["a", "b", "c"])
     repetitions: int = 3
     sample_rows_in_prompt: int = 10
+    # Row-level detection on very large tables (e.g. TPC-H lineitem at 600k rows)
+    # is dominated by GX's COMPLETE result-format materialization. To keep the
+    # validate step tractable, tables larger than this cap are uniformly
+    # subsampled (fixed seed) *for validation only* — generation still sees the
+    # full clean schema/sample. Cross-row error types (duplicate_row, mixed) are
+    # never subsampled, since their detection needs all rows present. Set to
+    # null to disable subsampling and validate on full tables.
+    validation_row_cap: int | None = 50_000
+    validation_sample_seed: int = 20240101
     injection: InjectionConfig = Field(default_factory=InjectionConfig)
     paths: Paths = Field(default_factory=Paths)
 

@@ -59,12 +59,13 @@ datasets:
     doc_path: docs/tpch.md
 
 conditions: [a, b, c]      # a=schema, b=schema+docs, c=schema+docs+sample rows
-repetitions: 3
+repetitions: 1             # medium scope; temp=0 is ~deterministic. Bump to 3 for stability study.
 sample_rows_in_prompt: 10
+validation_row_cap: 100000  # validate large tables on a fixed-seed 100k subsample (per-row error types only)
 
 injection:
   rates: [0.01, 0.05]
-  seeds: [1, 2, 3]
+  seeds: [1, 2]            # medium scope; add seed 3 for tighter variance bars
 
 paths:
   raw_dir: data/raw

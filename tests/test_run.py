@@ -19,7 +19,7 @@ from dqgen.config import (
     Paths,
 )
 from dqgen.report import run_report
-from dqgen.run import _table_refs, run_inject, run_validate
+from dqgen.run import _subsample, _table_refs, run_inject, run_validate
 
 
 def _synthetic_taxi(n: int = 120) -> pd.DataFrame:
@@ -61,6 +61,24 @@ def _make_config(tmp_path) -> ExperimentConfig:
             results_dir=str(tmp_path / "results"),
         ),
     )
+
+
+def test_subsample_caps_and_is_deterministic(tmp_path):
+    cfg = _make_config(tmp_path)
+    cfg.validation_row_cap = 30
+    cfg.validation_sample_seed = 7
+    df = _synthetic_taxi(120)
+    a = _subsample(df, cfg)
+    b = _subsample(df, cfg)
+    assert len(a) == 30
+    assert a[ROW_ID].tolist() == b[ROW_ID].tolist()  # deterministic
+    assert set(a[ROW_ID]).issubset(set(df[ROW_ID]))   # row ids preserved
+    # Under the cap => returned unchanged.
+    cfg.validation_row_cap = 1000
+    assert len(_subsample(df, cfg)) == 120
+    # Disabled => unchanged.
+    cfg.validation_row_cap = None
+    assert len(_subsample(df, cfg)) == 120
 
 
 def test_table_refs_single_taxi(tmp_path):

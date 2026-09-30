@@ -25,6 +25,7 @@ from typing import Callable, Iterator
 import pandas as pd
 import typer
 
+from dqgen import ROW_ID
 from dqgen.baselines.human_rules import load_human_suite
 from dqgen.baselines.stats_profiler import profile_suite
 from dqgen.config import ExperimentConfig, ModelSpec, load_config
@@ -223,6 +224,25 @@ def run_generate(cfg: ExperimentConfig, client_factory: ClientFactory | None = N
 # --------------------------------------------------------------------------- #
 # validate
 # --------------------------------------------------------------------------- #
+# Error types whose detection depends on cross-row context (a duplicated row is
+# only detectable if its twin is also present), so they must never be
+# subsampled. Everything else is per-row and safe to subsample uniformly.
+CROSS_ROW_ERROR_TYPES = frozenset({"duplicate_row", "mixed"})
+
+
+def _subsample(df: pd.DataFrame, cfg: ExperimentConfig) -> pd.DataFrame:
+    """Uniform fixed-seed subsample of a validation frame if it exceeds the cap.
+
+    Returns the frame unchanged when subsampling is disabled or the frame is
+    already within the cap. Row ids are preserved so injected-error labels stay
+    alignable.
+    """
+    cap = cfg.validation_row_cap
+    if cap is None or len(df) <= cap:
+        return df
+    return df.sample(n=cap, random_state=cfg.validation_sample_seed).reset_index(drop=True)
+
+
 @dataclass
 class SuiteRun:
     method: str
@@ -279,9 +299,13 @@ def _clean_metric_rows(sr: SuiteRun, tref: TableRef, clean_report: ValidationRep
     return rows
 
 
-def _detection_rows(sr: SuiteRun, tref: TableRef, entry: dict) -> list[dict]:
+def _detection_rows(sr: SuiteRun, tref: TableRef, entry: dict, cfg: ExperimentConfig) -> list[dict]:
     corrupted = pd.read_parquet(entry["data_path"])
     labels = pd.read_parquet(entry["labels_path"])
+    # Per-row error types may be subsampled for speed; cross-row ones must not.
+    if entry["error_type"] not in CROSS_ROW_ERROR_TYPES:
+        corrupted = _subsample(corrupted, cfg)
+        labels = labels[labels[ROW_ID].isin(set(corrupted[ROW_ID]))]
     report = validate_suite(sr.expectations, corrupted, dataset=tref.table_id)
     scores = detection_scores(report.flagged_row_ids, labels)
     d = _dims(sr, tref)
@@ -313,11 +337,14 @@ def run_validate(
         if not tref.clean_path.exists():
             continue
         clean = pd.read_parquet(tref.clean_path)
+        # Suites are built from the full clean table (schema, profiler, prompt
+        # samples); clean false-positive checks run on the subsampled frame.
+        clean_eval = _subsample(clean, cfg)
         for sr in _iter_suites(cfg, tref, clean, client_factory, skip_llm):
-            clean_report = validate_suite(sr.expectations, clean, dataset=tref.table_id)
+            clean_report = validate_suite(sr.expectations, clean_eval, dataset=tref.table_id)
             all_rows.extend(_clean_metric_rows(sr, tref, clean_report))
             for entry in by_table.get(tref.table_id, []):
-                all_rows.extend(_detection_rows(sr, tref, entry))
+                all_rows.extend(_detection_rows(sr, tref, entry, cfg))
 
     results_dir = Path(cfg.paths.results_dir)
     results_dir.mkdir(parents=True, exist_ok=True)
